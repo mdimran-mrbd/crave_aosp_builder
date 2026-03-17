@@ -52,3 +52,25 @@ jobs:
           --manifest "${{ github.event.inputs.local_manifest }}" \
           --product "${{ github.event.inputs.product_to_build }}" \
           --build "${{ github.event.inputs.build_command }}"
+
+        - name: Install and Run Build
+        run: |
+          # 1. Download Crave
+          curl -sL https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
+          
+          # 2. Setup executable
+          mkdir -p bin
+          mv crave bin/
+          export PATH=$PWD/bin:$PATH
+          
+          # 3. Create the config file in the CURRENT directory
+          echo '${{ secrets.CRAVE_TOKEN }}' > ./crave.conf
+          
+          # 4. Verify and Run with the -c flag to force the config
+          crave version
+          
+          crave -c ./crave.conf run --base "${{ github.event.inputs.base_project }}" \
+          --init "${{ github.event.inputs.init_command }}" \
+          --manifest "${{ github.event.inputs.local_manifest }}" \
+          --product "${{ github.event.inputs.product_to_build }}" \
+          --build "${{ github.event.inputs.build_command }}"
