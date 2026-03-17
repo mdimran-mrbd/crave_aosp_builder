@@ -1,0 +1,48 @@
+name: Crave Builder
+on:
+  workflow_dispatch:
+    inputs:
+      base_project:
+        description: 'Base project'
+        required: true
+        default: 'AOSP'
+      init_command:
+        description: 'Initialize Command'
+        required: true
+        default: 'repo init -u https://github.com/crdroidandroid/android.git -b 16.0 --git-lfs --depth 1'
+      local_manifest:
+        description: 'Personal local manifest [repository]'
+        required: true
+        default: 'https://github.com/mdimran-mrbd/local_manifests'
+      product_to_build:
+        description: 'Product to build'
+        required: true
+        default: 'lineage_toco-ap3a-userdebug'
+      build_command:
+        description: 'Command for compiling'
+        required: true
+        default: 'brunch toco'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Crave
+        run: |
+          mkdir -p bin
+          curl -sL https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
+          mv crave bin/
+          echo "$HOME/bin" >> $GITHUB_PATH
+          mkdir -p $HOME/.crave
+          echo "${{ secrets.CRAVE_CONF }}" > $HOME/.crave/crave.conf
+
+      - name: Build
+        run: |
+          crave run --base ${{ github.event.inputs.base_project }} \
+          --init "${{ github.event.inputs.init_command }}" \
+          --manifest "${{ github.event.inputs.local_manifest }}" \
+          --product ${{ github.event.inputs.product_to_build }} \
+          --build "${{ github.event.inputs.build_command }}"
