@@ -30,19 +30,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Crave
+      - name: Install and Configure Crave
         run: |
-          mkdir -p bin
-          curl -sL https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
-          mv crave bin/
-          echo "$HOME/bin" >> $GITHUB_PATH
+          # Download and install Crave CLI to a system path
+          sudo curl -sL https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | sudo bash -s --
+          sudo install -m 0755 crave /usr/local/bin/crave
+          
+          # Create config directory and write the secret
           mkdir -p $HOME/.crave
-          echo "${{ secrets.CRAVE_CONF }}" > $HOME/.crave/crave.conf
+          echo "${{ secrets.CRAVE_TOKEN }}" > $HOME/.crave/crave.conf
+          
+          # Verify installation
+          crave version
 
       - name: Build
         run: |
-          crave run --base ${{ github.event.inputs.base_project }} \
+          crave run --base "${{ github.event.inputs.base_project }}" \
           --init "${{ github.event.inputs.init_command }}" \
           --manifest "${{ github.event.inputs.local_manifest }}" \
-          --product ${{ github.event.inputs.product_to_build }} \
+          --product "${{ github.event.inputs.product_to_build }}" \
           --build "${{ github.event.inputs.build_command }}"
