@@ -40,16 +40,16 @@ jobs:
           mv crave bin/
           export PATH=$PWD/bin:$PATH
           
-          # 3. Create the config file in the current working directory
-          # IMPORTANT: Ensure your CRAVE_TOKEN secret contains the FULL JSON text from your crave.conf file
+          # 3. Create the config file
           echo '${{ secrets.CRAVE_TOKEN }}' > ./crave.conf
           
-          # 4. Verify version
-          crave version
+          # 4. Run the build using the newer command structure
+          # We use "crave run" followed by the flags. 
+          # Note: Some versions require the command at the end.
           
-          # 5. Run the build with the explicit config flag (-c)
-          crave -c ./crave.conf run --base "${{ github.event.inputs.base_project }}" \
-          --init "${{ github.event.inputs.init_command }}" \
-          --manifest "${{ github.event.inputs.local_manifest }}" \
-          --product "${{ github.event.inputs.product_to_build }}" \
-          --build "${{ github.event.inputs.build_command }}"
+          crave -c ./crave.conf run \
+            --base "${{ github.event.inputs.base_project }}" \
+            --init "${{ github.event.inputs.init_command }}" \
+            --manifest "${{ github.event.inputs.local_manifest }}" \
+            --product "${{ github.event.inputs.product_to_build }}" \
+            --build "${{ github.event.inputs.build_command }}"
