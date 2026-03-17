@@ -30,21 +30,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install and Configure Crave
+      - name: Install and Run Build
         run: |
-          # Download and install Crave CLI to a system path
-          sudo curl -sL https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | sudo bash -s --
-          sudo install -m 0755 crave /usr/local/bin/crave
+          # 1. Download Crave
+          curl -sL https://raw.githubusercontent.com/accupara/crave/master/get_crave.sh | bash -s --
           
-          # Create config directory and write the secret
+          # 2. Move it to a local folder and add to path for THIS step
+          mkdir -p bin
+          mv crave bin/
+          export PATH=$PWD/bin:$PATH
+          
+          # 3. Configure Crave
           mkdir -p $HOME/.crave
           echo "${{ secrets.CRAVE_TOKEN }}" > $HOME/.crave/crave.conf
           
-          # Verify installation
+          # 4. Verify and Run
           crave version
-
-      - name: Build
-        run: |
+          
           crave run --base "${{ github.event.inputs.base_project }}" \
           --init "${{ github.event.inputs.init_command }}" \
           --manifest "${{ github.event.inputs.local_manifest }}" \
